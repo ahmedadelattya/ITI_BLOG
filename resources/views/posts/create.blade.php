@@ -5,20 +5,11 @@
 
 @section('content')
     <h1 style="text-align: center"> Add new Post</h1>
-    @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-    <div class="container mt-5">
+    <div class="container mt-4">
         <div class="card">
             <div class="card-body">
                 <h4 class="card-title mb-4">Create Post</h4>
-                <form method="post" action="{{ route('posts.store') }}">
+                <form method="POST" enctype="multipart/form-data" action="{{ route('posts.store') }}">
                     @csrf
                     <!-- Title input -->
                     <div class="mb-3">
@@ -26,6 +17,12 @@
                         <input type="text" class="form-control" id="postTitle" placeholder="Enter the title"
                             name="title" value="{{ old('title') }}">
                     </div>
+                    @error('title')
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            {{ $message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @enderror
 
                     <!-- Description textarea -->
                     <div class="mb-3">
@@ -33,19 +30,24 @@
                         <textarea class="form-control" id="postDescription" rows="4" placeholder="Enter the description"
                             name="description">{{ old('description') }}</textarea>
                     </div>
+                    @error('description')
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            {{ $message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @enderror
 
-                    <!-- Post creator dropdown -->
+                    <!-- Image input -->
                     <div class="mb-3">
-                        <label for="postCreator" class="form-label">Post Creator</label>
-                        <select class="form-select" id="postCreator" name="posted_by">
-                            <option selected disabled>Choose a creator</option>
-                            <option value="ahmed" {{ old('posted_by') == 'ahmed' ? 'selected' : '' }}>Ahmed</option>
-                            <option value="mohamed" {{ old('posted_by') == 'mohamed' ? 'selected' : '' }}>Mohamed</option>
-                            <option value="adel" {{ old('posted_by') == 'adel' ? 'selected' : '' }}>Adel</option>
-                            <option value="omar" {{ old('posted_by') == 'omar' ? 'selected' : '' }}>Omar</option>
-                        </select>
+                        <label for="postImage" class="form-label">Image</label>
+                        <input type="file" class="form-control" id="postImage" name="image">
                     </div>
-
+                    @error('image')
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            {{ $message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @enderror
                     <!-- Submit button -->
                     <button type="submit" class="btn btn-success">Submit</button>
                 </form>

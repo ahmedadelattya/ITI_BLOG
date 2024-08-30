@@ -1,15 +1,28 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\HomeController;
 
-Route::redirect('/', '/posts');
-Route::get("/posts", [PostController::class, "index"])->name("posts.index");
-Route::get("/create_post", [PostController::class, "create"])->name("posts.create");
-Route::get("/show_post/{id}", [PostController::class, "show"])->name("posts.show");
-Route::get("/edit_post/{id}", [PostController::class, "edit"])->name("posts.edit");
-Route::get("/delete_post/{id}", [PostController::class, "delete"])->name("posts.delete");
 
-# http request method --> post
-Route::post("/students", [PostController::class, "store"])->name("posts.store");
-Route::post("/update_post/{id}", [PostController::class, "update"])->name("posts.update");
+Route::redirect('/', '/home');
+// Publicly accessible routes
+Route::get('posts', [PostController::class, 'index'])->name('posts.index');
+Route::get('posts/create', [PostController::class, 'create'])->name('posts.create');
+Route::get('posts/{post:slug}', [PostController::class, 'show'])->name('posts.show');
+
+// Authenticated accessible routes
+Route::middleware('auth')->group(function () {
+    Route::post('posts', [PostController::class, 'store'])->name('posts.store');
+    Route::get('posts/{post:slug}/edit', [PostController::class, 'edit'])->name('posts.edit');
+    Route::put('posts/{post:slug}', [PostController::class, 'update'])->name('posts.update');
+    Route::delete('posts/{post:slug}', [PostController::class, 'destroy'])->name('posts.destroy');
+    Route::post('/posts/reset', [PostController::class, 'reset'])->name('posts.reset');
+});
+
+
+
+Auth::routes();
+
+Route::get('/home', [HomeController::class, 'index'])->name('home');

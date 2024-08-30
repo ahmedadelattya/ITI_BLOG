@@ -2,125 +2,104 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
 use App\Models\Post;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\StorePostRequest;
+use App\Http\Requests\UpdatePostRequest;
+use App\Rules\MaxPosts;
 
 class PostController extends Controller
 {
-    private $posts = [
-        [
-            "id" => 1,
-            "title" => "Learn PHP",
-            "posted_by" => "Ahmed",
-            "created_at" => "2018-04-10",
-            "description" => "An introductory guide to learning PHP, covering the basics and essential concepts for beginners."
-        ],
-        [
-            "id" => 2,
-            "title" => "SOLID Principles",
-            "posted_by" => "Mohamed",
-            "created_at" => "2018-04-11",
-            "description" => "A comprehensive overview of the SOLID principles in software development, explaining how to create more maintainable and scalable code."
-        ],
-        [
-            "id" => 3,
-            "title" => "Design Patterns",
-            "posted_by" => "Adel",
-            "created_at" => "2018-04-12",
-            "description" => "An exploration of common design patterns in object-oriented programming, with practical examples and use cases."
-        ],
-        [
-            "id" => 4,
-            "title" => "OOP",
-            "posted_by" => "Omar",
-            "created_at" => "2018-04-13",
-            "description" => "An in-depth look at Object-Oriented Programming (OOP), covering key concepts like inheritance, polymorphism, and encapsulation."
-        ]
-    ];
-
-
-    // contains functions --> manage actions
-    function index()
+    // Displays a paginated list of posts
+    public function index()
     {
-        $posts = Post::all();
-        return view("posts.index", ["posts" => $posts]);
+        $posts = Post::paginate(4);
+        return view("posts.index", compact('posts'));
     }
 
-    function create()
+    // Shows the form for creating a new post
+    public function create()
     {
-        //
+        $this->authorize('create', Post::class);
+        $users = User::all();
         return view("posts.create");
     }
 
-    function store()
+    // Stores a newly created post in the database
+    public function store(StorePostRequest $request)
     {
-        $valid_data = request()->validate([
-            "title" => "required|unique:posts",
-            "description" => "required",
-            "posted_by" => "required"
-        ]);
-        $request_data = request()->all(); # get request parameter
-        # if form is not valid  --> redirect to the html page
-        $post = new Post();
-        $post->title = $request_data['title'];
-        $post->description = $request_data['description'];
-        $post->posted_by = $request_data['posted_by'];
-        $post->save();
-        return to_route("posts.show", $post->id);
-    }
-    function show($id)
-    {
-        $post = Post::find($id);
-        if ($post) {
-            return view("posts.show", ["post" => $post]);
+        $image_path = null;
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $image_path = $image->store("", 'posts_images');
         }
 
-        abort(404); # return with page 404 not found
+        $request_data = $request->all();
+        $request_data['image'] = $image_path; // Replace image object with image path
+        $request_data['user_id'] = Auth::id(); // Set the user ID for the post
+
+        $post = Post::create($request_data);
+        return to_route('posts.show', $post);
     }
-    function edit($id)
+
+    // Displays the specified post
+    public function show(Post $post)
     {
-        //
-        $post = Post::find($id);
-        if ($post) {
-            return view("posts.edit", ["post" => $post]);
+        return view('posts.show', compact('post'));
+    }
+
+    // Shows the form for editing the specified post
+    public function edit(Post $post)
+    {
+        $this->authorize('update', $post);
+        $users = User::all();
+        return view("posts.edit", compact('post', 'users'));
+    }
+
+    // Updates the specified post in the database
+    public function update(UpdatePostRequest $request, Post $post)
+    {
+        $this->authorize('update', $post);
+
+        $image_path = $post->image;
+        if ($request->hasFile('image')) {
+            // Delete old image if it exists
+            $oldImagePath = public_path('images/posts/' . $post->image);
+            if (file_exists($oldImagePath)) {
+                unlink($oldImagePath);
+            }
+            $image = $request->file('image');
+            $image_path = $image->store("", 'posts_images');
         }
 
-        abort(404); # return with page 404 not found
+        $request_data = $request->all();
+        $request_data['image'] = $image_path;
+        $request_data['user_id'] = Auth::id(); // Set the user ID for the post
+        $post->update($request_data);
+        return to_route('posts.show', $post);
     }
 
-    function delete($id)
+    // Deletes the specified post from the database
+    public function destroy(Post $post)
     {
-        $post = Post::find($id);
-        if ($post) {
-            $post->delete();  # delete from posts where id=id;
-            return to_route("posts.index");
-        }
-        abort(404);
+        $this->authorize('delete', $post);
+        // Delete the post from the database
+        $post->delete();
+
+        // Redirect with a success message
+        return to_route('posts.index')->with('success', 'Post deleted successfully');
     }
 
-    function update($id)
+    // Restores all soft-deleted posts
+    public function reset()
     {
-        // Validate the incoming request
-        $valid_data = request()->validate([
-            "title" => "required|unique:posts",
-            "description" => "required",
-            "posted_by" => "required"
-        ]);
-        //get request parameter
-        $request_data = request()->all();
-        // Find the post by its ID
-        $post = Post::findOrFail($id);
+        $this->authorize('restore', Post::class);
 
-        // Update the post's fields with validated data
-        $post->title = $request_data['title'];
-        $post->description = $request_data['description'];
-        $post->posted_by = $request_data['posted_by'];
+        Post::onlyTrashed()->restore();
 
-        // Save the changes to the database
-        $post->save();
-
-        // Redirect to the post's show page
-        return to_route("posts.show", $post->id);
+        // Redirect back to the index page with a success message
+        return to_route('posts.index')->with('success', 'All deleted posts have been restored successfully.');
     }
 }
