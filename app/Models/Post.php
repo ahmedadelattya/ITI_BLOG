@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Cviebrock\EloquentSluggable\Sluggable;
 use Cviebrock\EloquentSluggable\Services\SlugService;
+use Carbon\Carbon;
+
 
 class Post extends Model
 {
@@ -17,18 +19,27 @@ class Post extends Model
     protected $dates = ['deleted_at'];
     # relation user
     function user()
-    { # define user property
+    {
         return $this->belongsTo(User::class);
-        # select * from users where id = $this->user_id;
-        ## relation --> with user object
     }
 
     public function sluggable(): array
     {
         return [
-            'slug' => [ // Name of the slug field
-                'source' => 'title', // The field to base the slug on
+            'slug' => [
+                'source' => 'title',
             ]
         ];
+    }
+
+    // Accessor for human-readable date
+    public function getHumanReadableCreatedAtAttribute()
+    {
+        return Carbon::parse($this->created_at)->diffForHumans();
+    }
+    // Accessor for human-readable updated_at date
+    public function getHumanReadableUpdatedAtAttribute()
+    {
+        return Carbon::parse($this->updated_at)->diffForHumans();
     }
 }

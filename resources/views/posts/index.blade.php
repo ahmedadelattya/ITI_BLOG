@@ -50,7 +50,7 @@
                             style="width: 100px; height: 100px; object-fit: contain;" alt="postImage" class="img-fluid">
                     </td>
                     <td>{{ $post->user->name }}</td>
-                    <td>{{ $post->created_at }}</td>
+                    <td>{{ $post->human_readable_created_at }}</td>
                     <td><a href="{{ route('posts.show', $post) }}" class="btn btn-info">View</a></td>
                     @auth
                         <td>

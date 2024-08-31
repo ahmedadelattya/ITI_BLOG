@@ -37,7 +37,7 @@
                                     <small class="text-muted">Posted By: {{ $post->user->name }}</small>
                                 </p>
                                 <p class="card-text mb-0">
-                                    <small class="text-muted">Last updated: {{ $post->updated_at->diffForHumans() }}</small>
+                                    <small class="text-muted">Last updated: {{ $post->human_readable_updated_at }}</small>
                                 </p>
                             </div>
                         </div>
