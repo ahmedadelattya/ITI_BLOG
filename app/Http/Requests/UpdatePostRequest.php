@@ -25,7 +25,7 @@ class UpdatePostRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "title" => ["required", "min:3", Rule::unique('posts', 'title')->ignore($this->post), new MaxPosts],
+            "title" => ["required", "min:3", Rule::unique('posts', 'title')->ignore($this->post)],
             "description" => "required|min:10",
             "image" => "image|mimes:jpeg,jpg,png,svg|max:2048"
         ];

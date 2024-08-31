@@ -8,6 +8,14 @@
                     <div class="card-header">{{ __('Profile') }}</div>
 
                     <div class="card-body">
+                        <!-- Success Message -->
+                        @if (session('success'))
+                            <div class="alert alert-success text-center">
+                                {{ session('success') }}
+                            </div>
+                        @endif
+
+                        <!-- Profile Form -->
                         <div class="row mb-3">
                             <!-- Left Section: Profile Image and Name -->
                             <div class="col-md-4 d-flex flex-column align-items-center text-center">
@@ -25,7 +33,8 @@
 
                             <!-- Right Section: Update Form -->
                             <div class="col-md-8">
-                                <form method="POST" enctype="multipart/form-data">
+                                <form method="POST" action="{{ route('update.profile', ['user' => Auth::id()]) }}"
+                                    enctype="multipart/form-data">
                                     @csrf
                                     @method('PUT')
 
@@ -108,18 +117,32 @@
                                         <div class="col-md-6">
                                             <input id="password_confirmation" type="password" class="form-control"
                                                 name="password_confirmation" autocomplete="new-password">
-
-
                                         </div>
                                     </div>
 
-                                    <div class="row mb-0">
+
+                                    <div class="row mb-2">
                                         <div class="col-md-8 offset-md-4">
-                                            <button type="submit" class="btn btn-primary">
-                                                {{ __('Update Profile') }}
-                                            </button>
+                                            <div class="d-flex">
+                                                <button type="submit" class="btn btn-primary me-2">
+                                                    {{ __('Update Profile') }}
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
+                                </form>
+                            </div>
+                        </div>
+                        <!-- Separate Card for Account Deletion -->
+                        <div class="card mt-4">
+                            <div class="card-body">
+                                <h5 class="text-danger">Danger Zone</h5>
+                                <form action="{{ route('destroy.profile', ['user' => Auth::id()]) }}" method="post"
+                                    id="delete-profile-form"
+                                    onsubmit="return confirm('Are you sure you want to delete this post?');">
+                                    @csrf
+                                    @method('delete')
+                                    <button type="submit" class="btn btn-danger">Delete Account</button>
                                 </form>
                             </div>
                         </div>

@@ -9,9 +9,12 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
 use App\Rules\MaxPosts;
+use Illuminate\Support\Facades\Storage;
+
 
 class PostController extends Controller
 {
+
     // Displays a paginated list of posts
     public function index()
     {
@@ -65,10 +68,9 @@ class PostController extends Controller
 
         $image_path = $post->image;
         if ($request->hasFile('image')) {
-            // Delete old image if it exists
-            $oldImagePath = public_path('images/posts/' . $post->image);
-            if (file_exists($oldImagePath)) {
-                unlink($oldImagePath);
+            # delete old_image
+            if (Storage::disk('posts_images')->exists($image_path)) {
+                Storage::disk('posts_images')->delete($image_path);
             }
             $image = $request->file('image');
             $image_path = $image->store("", 'posts_images');

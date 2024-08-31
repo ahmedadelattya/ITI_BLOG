@@ -28,7 +28,7 @@
             <tr>
                 <th class="col text-center align-middle">ID</th>
                 <th class="col text-center align-middle">Title</th>
-                <th class="col text-center align-middle">Slug</th> <!-- New Column for Slug -->
+                <th class="col text-center align-middle">Slug</th>
                 <th class="col text-center align-middle">Image</th>
                 <th class="col text-center align-middle">Posted By</th>
                 <th class="col text-center align-middle">Created At</th>
@@ -44,7 +44,7 @@
                 <tr class="text-center align-middle">
                     <td>{{ $post->id }}</td>
                     <td>{{ $post->title }}</td>
-                    <td>{{ $post->slug }}</td> <!-- Displaying the Slug Value -->
+                    <td>{{ $post->slug }}</td>
                     <td>
                         <img src="{{ asset('images/posts/' . $post->image) }}"
                             style="width: 100px; height: 100px; object-fit: contain;" alt="postImage" class="img-fluid">
@@ -53,14 +53,24 @@
                     <td>{{ $post->created_at }}</td>
                     <td><a href="{{ route('posts.show', $post) }}" class="btn btn-info">View</a></td>
                     @auth
-                        <td><a href="{{ route('posts.edit', $post) }}" class="btn btn-success">Edit</a></td>
                         <td>
-                            <form action="{{ route('posts.destroy', $post) }}" method="post"
-                                onsubmit="return confirm('Are you sure you want to delete this post?');">
-                                @csrf
-                                @method('delete')
-                                <input type="submit" class="btn btn-danger" value="Delete">
-                            </form>
+                            @can('update', $post)
+                                <a href="{{ route('posts.edit', $post) }}" class="btn btn-success">Edit</a>
+                            @else
+                                <a href="#" class="btn btn-success disabled" aria-disabled="true">Edit</a>
+                            @endcan
+                        </td>
+                        <td>
+                            @can('delete', $post)
+                                <form action="{{ route('posts.destroy', $post) }}" method="post"
+                                    onsubmit="return confirm('Are you sure you want to delete this post?');">
+                                    @csrf
+                                    @method('delete')
+                                    <input type="submit" class="btn btn-danger" value="Delete">
+                                </form>
+                            @else
+                                <button class="btn btn-danger" disabled>Delete</button>
+                            @endcan
                         </td>
                     @endauth
                 </tr>

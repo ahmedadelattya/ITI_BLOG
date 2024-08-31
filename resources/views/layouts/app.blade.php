@@ -34,6 +34,11 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <!-- Left Side Of Navbar -->
                     <ul class="navbar-nav me-auto">
+                        @auth
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('home') }}">{{ __('Profile') }}</a>
+                            </li>
+                        @endauth
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('posts.index') }}">{{ __('Posts') }}</a>
                         </li>
